@@ -27,6 +27,10 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      # passed through so the datasource provisioning file can reference them
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./dashboard/grafana/provisioning:/etc/grafana/provisioning
       - ./dashboard/grafana/dashboards:/var/lib/grafana/dashboards

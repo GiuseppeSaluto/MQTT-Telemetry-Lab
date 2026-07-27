@@ -1,15 +1,17 @@
-# TODO: provision the TimescaleDB (Postgres) datasource
-#
-# apiVersion: 1
-# datasources:
-#   - name: TimescaleDB
-#     type: postgres
-#     url: timescaledb:5432
-#     database: telemetry
-#     user: iot
-#     secureJsonData:
-#       password: iot
-#     jsonData:
-#       sslmode: disable
-#       postgresVersion: 1600
-#       timescaledb: true
+apiVersion: 1
+
+datasources:
+  - name: TimescaleDB
+    type: postgres
+    access: proxy
+    url: timescaledb:5432
+    database: $POSTGRES_DB
+    user: $POSTGRES_USER
+    secureJsonData:
+      password: $POSTGRES_PASSWORD
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: true
+    isDefault: true
+    editable: false
