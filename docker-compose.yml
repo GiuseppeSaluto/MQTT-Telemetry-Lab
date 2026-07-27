@@ -32,6 +32,7 @@ services:
     volumes:
       - ./dashboard/grafana/provisioning:/etc/grafana/provisioning
       - ./dashboard/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
     depends_on:
       - timescaledb
 
@@ -63,3 +64,4 @@ services:
 
 volumes:
   timescaledb_data:
+  grafana_data:
