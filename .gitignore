@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+target/
+.env
+.env.*
+!.env.example
+.vscode/*.log
+.idea/
+.DS_Store
+Thumbs.db
+*.pem
+*.key

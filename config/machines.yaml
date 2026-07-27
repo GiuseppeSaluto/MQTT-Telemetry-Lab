@@ -1,0 +1,21 @@
+# Simulated machines, lines and critical thresholds
+lines:
+  line1:
+    machines:
+      - id: machine_A
+        type: extruder
+        thresholds:
+          temperature_max: 85
+          vibration_max: 4.5
+      - id: machine_B
+        type: packaging
+        thresholds:
+          temperature_max: 60
+          vibration_max: 3.0
+  line2:
+    machines:
+      - id: machine_C
+        type: assembly
+        thresholds:
+          temperature_max: 50
+          vibration_max: 2.5
