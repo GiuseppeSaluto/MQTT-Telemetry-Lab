@@ -35,11 +35,31 @@ services:
     depends_on:
       - timescaledb
 
-  # simulator:
-  #   build: ./simulator
+  simulator:
+    build: ./simulator
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      MACHINES_CONFIG: /app/config/machines.yaml
+      SIM_INTERVAL_SECONDS: 2
+    volumes:
+      - ./config/machines.yaml:/app/config/machines.yaml:ro
+    depends_on:
+      - mosquitto
 
-  # ingestion:
-  #   build: ./ingestion
+  ingestion:
+    build: ./ingestion
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: timescaledb
+      POSTGRES_PORT: 5432
+    depends_on:
+      - mosquitto
+      - timescaledb
 
 volumes:
   timescaledb_data:
