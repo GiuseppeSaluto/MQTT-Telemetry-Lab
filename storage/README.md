@@ -1,9 +1,11 @@
 # Storage
 
 TimescaleDB schema and init scripts, run automatically on first container
-start via the `docker-entrypoint-initdb.d` mount (see `init/`).
+start via the `docker-entrypoint-initdb.d` mount (see `init/`). Init scripts
+only run against an empty data volume — if you change `001_schema.sql` after
+the volume already exists, drop the `timescaledb_data` volume to re-apply it.
 
-TODO:
-- `init/001_schema.sql`: telemetry table + `create_hypertable`
-- retention policy (e.g. drop chunks older than N days)
-- indexes for the query patterns the dashboard needs (per machine, per line, time range)
+- `init/001_schema.sql`: `telemetry` hypertable (1-day chunks), a `CHECK`
+  constraint on `state` (`running`/`idle`/`fault`), indexes on
+  `(machine_id, time DESC)` and `(line, time DESC)` for the dashboard's query
+  patterns, and a 30-day retention policy.

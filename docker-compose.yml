@@ -1,13 +1,13 @@
 services:
   mosquitto:
-    image: eclipse-mosquitto:2
+    image: eclipse-mosquitto:2.1.2-alpine
     ports:
       - "1883:1883"
     volumes:
       - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
   timescaledb:
-    image: timescale/timescaledb:latest-pg16
+    image: timescale/timescaledb:2.28.3-pg16
     ports:
       - "5432:5432"
     environment:
@@ -19,7 +19,7 @@ services:
       - timescaledb_data:/var/lib/postgresql/data
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.1
     ports:
       - "3000:3000"
     environment:
