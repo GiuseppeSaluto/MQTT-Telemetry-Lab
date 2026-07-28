@@ -21,7 +21,7 @@ See `docs/spec.md` and `docs/spec_source.pdf` for full architecture notes.
 └── docs/        # project spec
 ```
 
-## Architecture (draft)
+## Architecture
 ```mermaid
 flowchart LR
     SIM[simulator\nPython] -->|MQTT publish| MQ[Mosquitto]
@@ -33,10 +33,22 @@ flowchart LR
 ```
 
 ## Status
-Skeleton only — no component implemented yet. See checklist in `docs/spec.md`.
+All components implemented and working end-to-end: simulator publishes
+telemetry for 3 machines across 2 lines, ingestion writes it to TimescaleDB,
+Grafana displays it live (per-machine time series, state timeline, current
+status table, fault annotations). See checklist in `docs/spec.md`.
 
-## Run (WIP)
+## Run
 ```bash
 cp .env.example .env   # then edit .env with your own values
 docker compose up -d
 ```
+
+| Service     | URL / Port              | Notes                                  |
+|-------------|--------------------------|-----------------------------------------|
+| Grafana     | http://localhost:3000    | Login with `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD` from `.env`; dashboard "Factory Overview" |
+| TimescaleDB | `localhost:5432`         | Connect with any Postgres client (e.g. DBeaver) using the `POSTGRES_*` values from `.env` |
+| Mosquitto   | `localhost:1883`         | MQTT broker, topic `factory/{line}/{machine_id}/telemetry` |
+
+To follow logs for a single service: `docker compose logs -f simulator` (or
+`ingestion`, `grafana`, ...).

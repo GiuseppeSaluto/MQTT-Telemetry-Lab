@@ -23,10 +23,10 @@ Demo project, not real industrial IoT experience (hardware, industrial
 networks, security certifications). To be presented as such in interviews.
 
 ## Status
-- [ ] docker-compose.yml (mosquitto, timescaledb, grafana)
-- [ ] simulator: data generation with drift + noise + anomalies
-- [ ] config/machines.yaml + config/mosquitto.conf
-- [ ] ingestion (Rust): MQTT subscriber -> TimescaleDB
-- [ ] storage: schema + retention policy
-- [ ] dashboard: Grafana provisioning
-- [ ] README with architecture diagram
+- [x] docker-compose.yml (mosquitto, timescaledb, grafana)
+- [x] simulator: data generation with drift + noise + anomalies
+- [x] config/machines.yaml + config/mosquitto.conf
+- [x] ingestion (Rust): MQTT subscriber -> TimescaleDB
+- [x] storage: schema + retention policy
+- [x] dashboard: Grafana provisioning
+- [x] README with architecture diagram
