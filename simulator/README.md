@@ -29,3 +29,12 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 MQTT_HOST=localhost .venv/bin/python main.py
 ```
+
+## Tests
+`tests/test_main.py` covers the state machine transitions, per-state value
+generation, and config loading — pure functions, no MQTT/network involved.
+```bash
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest -v
+.venv/bin/ruff check .
+```

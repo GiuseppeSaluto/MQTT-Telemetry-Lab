@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+# lets `tests/test_main.py` do `import main` regardless of cwd
+pythonpath = ["."]

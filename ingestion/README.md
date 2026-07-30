@@ -28,3 +28,11 @@ The service never crashes on a single bad message:
 cargo build --release
 MQTT_HOST=localhost POSTGRES_HOST=localhost ./target/release/ingestion
 ```
+
+## Tests
+Unit tests (`src/main.rs`, `#[cfg(test)] mod tests`) cover connection string
+building and telemetry JSON (de)serialization — no live broker/DB needed.
+```bash
+cargo test
+cargo clippy --all-targets -- -D warnings
+```
