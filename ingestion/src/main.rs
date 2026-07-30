@@ -21,13 +21,19 @@ struct Telemetry {
     state: String,
 }
 
+// Takes a lookup function instead of reading `env::var` directly so it can be
+// unit tested without touching real (process-global) environment variables.
+fn database_url_from(get: impl Fn(&str) -> Option<String>) -> String {
+    let user = get("POSTGRES_USER").unwrap_or_else(|| "iot".into());
+    let password = get("POSTGRES_PASSWORD").unwrap_or_else(|| "iot".into());
+    let db = get("POSTGRES_DB").unwrap_or_else(|| "telemetry".into());
+    let host = get("POSTGRES_HOST").unwrap_or_else(|| "timescaledb".into());
+    let port = get("POSTGRES_PORT").unwrap_or_else(|| "5432".into());
+    format!("postgres://{user}:{password}@{host}:{port}/{db}")
+}
+
 fn database_url() -> String {
-    let user = env::var("POSTGRES_USER").unwrap_or_else(|_| "iot".into());
-    let password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "iot".into());
-    let db = env::var("POSTGRES_DB").unwrap_or_else(|_| "telemetry".into());
-    let host = env::var("POSTGRES_HOST").unwrap_or_else(|_| "timescaledb".into());
-    let port = env::var("POSTGRES_PORT").unwrap_or_else(|_| "5432".into());
-    format!("postgres://{user}:{password}@{host}:{port}/{db}").to_string()
+    database_url_from(|key| env::var(key).ok())
 }
 
 async fn insert_telemetry(pool: &PgPool, t: &Telemetry) -> Result<(), sqlx::Error> {
@@ -93,5 +99,87 @@ async fn main() {
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn database_url_uses_provided_values() {
+        let url = database_url_from(|key| match key {
+            "POSTGRES_USER" => Some("alice".to_string()),
+            "POSTGRES_PASSWORD" => Some("secret".to_string()),
+            "POSTGRES_DB" => Some("mydb".to_string()),
+            "POSTGRES_HOST" => Some("dbhost".to_string()),
+            "POSTGRES_PORT" => Some("5555".to_string()),
+            _ => None,
+        });
+
+        assert_eq!(url, "postgres://alice:secret@dbhost:5555/mydb");
+    }
+
+    #[test]
+    fn database_url_falls_back_to_defaults() {
+        let url = database_url_from(|_| None);
+
+        assert_eq!(url, "postgres://iot:iot@timescaledb:5432/telemetry");
+    }
+
+    #[test]
+    fn telemetry_deserializes_valid_payload() {
+        let json = r#"{
+            "time": "2026-07-27T19:17:48.023858+00:00",
+            "line": "line1",
+            "machine_id": "machine_A",
+            "temperature": 26.83,
+            "vibration": 0.4,
+            "rpm": 0.0,
+            "power_consumption": 2.25,
+            "state": "idle"
+        }"#;
+
+        let telemetry: Telemetry = serde_json::from_str(json).expect("should deserialize");
+
+        assert_eq!(telemetry.line, "line1");
+        assert_eq!(telemetry.machine_id, "machine_A");
+        assert_eq!(telemetry.state, "idle");
+        assert_eq!(telemetry.temperature, 26.83);
+    }
+
+    #[test]
+    fn telemetry_rejects_missing_field() {
+        let json = r#"{
+            "time": "2026-07-27T19:17:48.023858+00:00",
+            "line": "line1",
+            "machine_id": "machine_A",
+            "temperature": 26.83,
+            "vibration": 0.4,
+            "rpm": 0.0,
+            "state": "idle"
+        }"#; // missing power_consumption
+
+        let result: Result<Telemetry, _> = serde_json::from_str(json);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn telemetry_rejects_malformed_timestamp() {
+        let json = r#"{
+            "time": "not-a-timestamp",
+            "line": "line1",
+            "machine_id": "machine_A",
+            "temperature": 26.83,
+            "vibration": 0.4,
+            "rpm": 0.0,
+            "power_consumption": 2.25,
+            "state": "idle"
+        }"#;
+
+        let result: Result<Telemetry, _> = serde_json::from_str(json);
+
+        assert!(result.is_err());
     }
 }
