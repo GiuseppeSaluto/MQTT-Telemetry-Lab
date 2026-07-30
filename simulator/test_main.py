@@ -27,15 +27,15 @@ class FakeRng:
 
 
 def make_machine(**overrides):
-    defaults = dict(
-        id="machine_X",
-        line="line1",
-        type="extruder",
-        temperature_max=85.0,
-        vibration_max=4.5,
-        rpm_baseline=1200.0,
-        power_baseline=45.0,
-    )
+    defaults = {
+        "id": "machine_X",
+        "line": "line1",
+        "type": "extruder",
+        "temperature_max": 85.0,
+        "vibration_max": 4.5,
+        "rpm_baseline": 1200.0,
+        "power_baseline": 45.0,
+    }
     defaults.update(overrides)
     return sim.MachineState(**defaults)
 
