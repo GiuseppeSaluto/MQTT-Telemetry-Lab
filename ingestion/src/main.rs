@@ -24,16 +24,18 @@ struct Telemetry {
 // Takes a lookup function instead of reading `env::var` directly so it can be
 // unit tested without touching real (process-global) environment variables.
 fn database_url_from(get: impl Fn(&str) -> Option<String>) -> String {
-    let user = get("POSTGRES_USER").unwrap_or_else(|| "iot".into());
-    let password = get("POSTGRES_PASSWORD").unwrap_or_else(|| "iot".into());
-    let db = get("POSTGRES_DB").unwrap_or_else(|| "telemetry".into());
-    let host = get("POSTGRES_HOST").unwrap_or_else(|| "timescaledb".into());
-    let port = get("POSTGRES_PORT").unwrap_or_else(|| "5432".into());
-    format!("postgres://{user}:{password}@{host}:{port}/{db}")
+    let user = get("POSTGRES_USER").unwrap_or_else(|| "iot".to_string());
+    let password = get("POSTGRES_PASSWORD").unwrap_or_else(|| "iot".to_string());
+    let db = get("POSTGRES_DB").unwrap_or_else(|| "telemetry".to_string());
+    let host = get("POSTGRES_HOST").unwrap_or_else(|| "timescaledb".to_string());
+    let port = get("POSTGRES_PORT").unwrap_or_else(|| "5432".to_string());
+
+    let url = format!("postgres://{user}:{password}@{host}:{port}/{db}");
+    url
 }
 
 fn database_url() -> String {
-    database_url_from(|key| env::var(key).ok())
+    database_url_from(|key| std::env::var(key).ok())
 }
 
 async fn insert_telemetry(pool: &PgPool, t: &Telemetry) -> Result<(), sqlx::Error> {
