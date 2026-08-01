@@ -1,7 +1,0 @@
-{
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/target": true
-  },
-  "python.defaultInterpreterPath": "${workspaceFolder}/simulator/.venv/bin/python"
-}

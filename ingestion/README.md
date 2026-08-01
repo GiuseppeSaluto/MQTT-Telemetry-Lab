@@ -9,14 +9,15 @@ The service never crashes on a single bad message:
 - malformed JSON → logged (`warn!`) and dropped
 - DB insert failure (e.g. `state` outside `running`/`idle`/`fault`, rejected
   by the schema's `CHECK` constraint) → logged (`error!`) and skipped
-- MQTT connection drop → logged (`warn!`), `rumqttc` reconnects automatically
-  on the next `poll()`
+- MQTT connection drop → logged (`warn!`), `rumqttc` reconnects and the
+  service resubscribes on every `ConnAck`
 
 ## Config (env vars)
 | Var | Default | Meaning |
 |---|---|---|
 | `MQTT_HOST` | `mosquitto` | broker host |
 | `MQTT_PORT` | `1883` | broker port |
+| `MQTT_CLIENT_ID` | `ingestion` | MQTT client ID - must be unique per broker connection |
 | `POSTGRES_HOST` | `timescaledb` | DB host |
 | `POSTGRES_PORT` | `5432` | DB port |
 | `POSTGRES_USER` | `iot` | DB user |

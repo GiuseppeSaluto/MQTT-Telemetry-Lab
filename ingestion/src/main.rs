@@ -72,15 +72,11 @@ async fn main() {
         .and_then(|p| p.parse().ok())
         .unwrap_or(1883);
 
-    let mut mqttoptions = MqttOptions::new("ingestion", mqtt_host, mqtt_port);
+    let client_id = env::var("MQTT_CLIENT_ID").unwrap_or_else(|_| "ingestion".into());
+    let mut mqttoptions = MqttOptions::new(client_id, mqtt_host, mqtt_port);
     mqttoptions.set_keep_alive(Duration::from_secs(5));
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    client
-        .subscribe("factory/+/+/telemetry", QoS::AtLeastOnce)
-        .await
-        .expect("failed to subscribe");
-    info!("subscribed to factory/+/+/telemetry");
 
     let mut sigterm =
         signal(SignalKind::terminate()).expect("failed to install SIGTERM handler");
@@ -89,6 +85,14 @@ async fn main() {
         tokio::select! {
             event = eventloop.poll() => {
                 match event {
+                    // clean_session resets subscriptions on every reconnect - resubscribe here.
+                    Ok(Event::Incoming(Packet::ConnAck(_))) => {
+                        if let Err(e) = client.subscribe("factory/+/+/telemetry", QoS::AtLeastOnce).await {
+                            error!("failed to subscribe: {e}");
+                        } else {
+                            info!("subscribed to factory/+/+/telemetry");
+                        }
+                    }
                     Ok(Event::Incoming(Packet::Publish(publish))) => {
                         match serde_json::from_slice::<Telemetry>(&publish.payload) {
                             Ok(telemetry) => {
