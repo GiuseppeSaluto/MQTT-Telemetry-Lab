@@ -9,3 +9,6 @@ the volume already exists, drop the `timescaledb_data` volume to re-apply it.
   constraint on `state` (`running`/`idle`/`fault`), indexes on
   `(machine_id, time DESC)` and `(line, time DESC)` for the dashboard's query
   patterns, and a 30-day retention policy.
+- `init/002_anomaly_detection.sql`: `telemetry_anomaly_scores` view, rolling
+  z-score per machine, flags `is_anomaly` independently of the simulator's
+  `state` label.

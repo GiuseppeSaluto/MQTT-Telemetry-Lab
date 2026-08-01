@@ -9,8 +9,8 @@ dashboard, anomaly detection. Portfolio project for Industry 4.0 roles.
 ## Components
 1. `simulator/` — Python multi-machine simulator (MQTT publisher)
 2. `ingestion/` — Rust MQTT subscriber -> TimescaleDB
-3. `storage/` — TimescaleDB schema/init
-4. `dashboard/` — Grafana provisioning (datasource + dashboards)
+3. `storage/` — TimescaleDB schema/init + rolling z-score anomaly detection
+4. `dashboard/` — Grafana provisioning (datasource + dashboards + alerting)
 5. `config/` — machines.yaml (machines, lines, thresholds) + mosquitto.conf
 
 ## Constraints
@@ -29,4 +29,5 @@ networks, security certifications). To be presented as such in interviews.
 - [x] ingestion (Rust): MQTT subscriber -> TimescaleDB
 - [x] storage: schema + retention policy
 - [x] dashboard: Grafana provisioning
+- [x] anomaly detection: rolling z-score view + Grafana alert rule
 - [x] README with architecture diagram

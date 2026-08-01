@@ -1,0 +1,37 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: anomaly-detection
+    folder: MQTT Telemetry Lab
+    interval: 1m
+    rules:
+      - uid: anomaly-detected
+        title: Machine anomaly detected
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: timescaledb
+            model:
+              rawSql: "SELECT count(*)::float AS anomaly_count FROM telemetry_anomaly_scores WHERE is_anomaly AND time > now() - interval '2 minutes'"
+              format: table
+              editorMode: code
+              rawQuery: true
+              refId: A
+          - refId: B
+            datasourceUid: "__expr__"
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: B
+        labels: {}
+        annotations:
+          summary: "Anomaly detected in machine telemetry"

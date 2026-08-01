@@ -68,6 +68,19 @@
         "rawQuery": true,
         "rawSql": "SELECT time AS time, machine_id || ' fault' AS text, machine_id AS tags FROM telemetry WHERE state = 'fault' AND $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time",
         "format": "table"
+      },
+      {
+        "name": "Detected Anomalies",
+        "enable": true,
+        "iconColor": "orange",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "timescaledb"
+        },
+        "editorMode": "code",
+        "rawQuery": true,
+        "rawSql": "SELECT time AS time, machine_id || ' anomaly (z=' || round(greatest(abs(temperature_zscore), abs(vibration_zscore))::numeric, 1) || ')' AS text, machine_id AS tags FROM telemetry_anomaly_scores WHERE is_anomaly AND $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time",
+        "format": "table"
       }
     ]
   },
@@ -307,6 +320,66 @@
           "rawQuery": true,
           "format": "table",
           "rawSql": "SELECT DISTINCT ON (machine_id) machine_id, line, state, temperature, vibration, rpm, power_consumption, time AS \"time\" FROM telemetry WHERE line IN ($line) AND machine_id IN ($machine_id) ORDER BY machine_id, time DESC"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Temperature Anomaly Score (z-score)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": { "thresholdsStyle": { "mode": "line" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "timescaledb" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT time AS \"time\", machine_id, temperature_zscore FROM telemetry_anomaly_scores WHERE $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Vibration Anomaly Score (z-score)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": { "thresholdsStyle": { "mode": "line" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "timescaledb" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT time AS \"time\", machine_id, vibration_zscore FROM telemetry_anomaly_scores WHERE $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
         }
       ]
     }

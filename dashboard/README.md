@@ -13,6 +13,9 @@ single source of truth — edit the JSON/YAML, not the running Grafana.
   loads any JSON dropped in `grafana/dashboards/`.
 - `grafana/dashboards/factory-overview.json`: the "Factory Overview"
   dashboard — per-machine time series (temperature/vibration/rpm/power), a
-  state timeline (running/idle/fault), a current-status table, and
-  annotations that mark fault episodes on the time series panels. Filterable
-  by `line`/`machine_id` template variables.
+  state timeline (running/idle/fault), a current-status table, z-score
+  anomaly panels, and annotations for both simulated faults and detected
+  anomalies. Filterable by `line`/`machine_id` template variables.
+- `grafana/provisioning/alerting/rules.yml`: alert rule, fires when
+  `telemetry_anomaly_scores.is_anomaly` (see `storage/`) is true in the last
+  2 minutes.
