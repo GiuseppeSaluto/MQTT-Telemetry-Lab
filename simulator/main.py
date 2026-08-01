@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import signal
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -156,7 +157,16 @@ def connect_with_retry(client: mqtt.Client, host: str, port: int, attempts: int 
     raise RuntimeError(f"could not connect to MQTT broker at {host}:{port}")
 
 
+def _raise_keyboard_interrupt(_signum, _frame) -> None:
+    raise KeyboardInterrupt
+
+
 def main() -> None:
+    # docker stop sends SIGTERM, which by default kills the process before
+    # our try/finally below would run - route it through the same shutdown
+    # path as Ctrl+C (SIGINT) instead.
+    signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
+
     machines = load_machines(CONFIG_PATH)
     logger.info("loaded %d machines from %s", len(machines), CONFIG_PATH)
 

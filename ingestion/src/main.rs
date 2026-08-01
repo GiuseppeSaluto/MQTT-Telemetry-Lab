@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 use serde::Deserialize;
 use sqlx::PgPool;
+use tokio::signal::unix::{signal, SignalKind};
 use tracing::{error, info, warn};
 
 #[derive(Debug, Deserialize)]
@@ -81,27 +82,46 @@ async fn main() {
         .expect("failed to subscribe");
     info!("subscribed to factory/+/+/telemetry");
 
+    let mut sigterm =
+        signal(SignalKind::terminate()).expect("failed to install SIGTERM handler");
+
     loop {
-        match eventloop.poll().await {
-            Ok(Event::Incoming(Packet::Publish(publish))) => {
-                match serde_json::from_slice::<Telemetry>(&publish.payload) {
-                    Ok(telemetry) => {
-                        if let Err(e) = insert_telemetry(&pool, &telemetry).await {
-                            error!("failed to insert telemetry: {e}");
+        tokio::select! {
+            event = eventloop.poll() => {
+                match event {
+                    Ok(Event::Incoming(Packet::Publish(publish))) => {
+                        match serde_json::from_slice::<Telemetry>(&publish.payload) {
+                            Ok(telemetry) => {
+                                if let Err(e) = insert_telemetry(&pool, &telemetry).await {
+                                    error!("failed to insert telemetry: {e}");
+                                }
+                            }
+                            Err(e) => {
+                                warn!("failed to parse telemetry payload: {e}");
+                            }
                         }
                     }
+                    Ok(_) => {}
                     Err(e) => {
-                        warn!("failed to parse telemetry payload: {e}");
+                        warn!("MQTT connection error: {e}");
+                        tokio::time::sleep(Duration::from_secs(1)).await;
                     }
                 }
             }
-            Ok(_) => {}
-            Err(e) => {
-                warn!("MQTT connection error: {e}");
-                tokio::time::sleep(Duration::from_secs(1)).await;
+            _ = tokio::signal::ctrl_c() => {
+                info!("received SIGINT, shutting down");
+                break;
+            }
+            _ = sigterm.recv() => {
+                info!("received SIGTERM, shutting down");
+                break;
             }
         }
     }
+
+    client.disconnect().await.ok();
+    pool.close().await;
+    info!("shutdown complete");
 }
 
 #[cfg(test)]
