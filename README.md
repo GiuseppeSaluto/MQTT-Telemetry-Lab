@@ -29,7 +29,6 @@ flowchart LR
     ING -->|write| DB[(TimescaleDB)]
     DB --> GRAF[Grafana]
     CFG[config/machines.yaml] -.-> SIM
-    CFG -.-> ING
 ```
 
 ## Status
