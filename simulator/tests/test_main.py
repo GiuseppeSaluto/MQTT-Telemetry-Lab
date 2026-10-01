@@ -60,7 +60,7 @@ def test_load_machines_reads_real_config():
 # -- _next_state ------------------------------------------------------------
 
 
-def test_running_stays_running_below_all_thresholds():
+def test_running_stays_running_above_transition_probabilities():
     machine = make_machine(state="running")
     rng = FakeRng(randoms=[0.99, 0.99])  # above ANOMALY_CHANCE and IDLE_CHANCE
 
@@ -145,7 +145,7 @@ def test_running_values_stay_within_plausible_bounds():
 
     for _ in range(500):
         temperature, vibration, rpm, power = sim._generate_values(machine, rng)
-        assert 0.0 <= temperature <= machine.temperature_max * 1.5
+        assert 0.0 <= temperature <= machine.temperature_max * 1.5  # arbitrary choice of upper bound
         assert vibration >= 0.0
         assert rpm >= 0.0
         assert power >= 0.0
