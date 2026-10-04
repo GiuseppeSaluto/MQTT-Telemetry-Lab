@@ -324,10 +324,75 @@
       ]
     },
     {
+      "id": 9,
+      "title": "Availability, Downtime & Energy (selected range)",
+      "description": "Availability = running time / observed time. Computed by machine_kpis() in storage/init/003_kpis.sql.",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 30, "w": 24, "h": 6 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "availability_pct" },
+            "properties": [
+              { "id": "displayName", "value": "Availability" },
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 1 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "running_min" },
+            "properties": [
+              { "id": "displayName", "value": "Running" },
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "idle_min" },
+            "properties": [
+              { "id": "displayName", "value": "Idle" },
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "fault_min" },
+            "properties": [
+              { "id": "displayName", "value": "Fault" },
+              { "id": "unit", "value": "m" },
+              { "id": "decimals", "value": 1 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "energy_kwh" },
+            "properties": [
+              { "id": "displayName", "value": "Energy" },
+              { "id": "unit", "value": "kwatth" },
+              { "id": "decimals", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT * FROM machine_kpis($__timeFrom(), $__timeTo()) WHERE line IN ($line) AND machine_id IN ($machine_id)"
+        }
+      ]
+    },
+    {
       "id": 7,
       "title": "Temperature Anomaly Score (z-score)",
       "type": "timeseries",
-      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 8 },
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 8 },
       "fieldConfig": {
         "defaults": {
           "unit": "none",
@@ -357,7 +422,7 @@
       "id": 8,
       "title": "Vibration Anomaly Score (z-score)",
       "type": "timeseries",
-      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 8 },
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 8 },
       "fieldConfig": {
         "defaults": {
           "unit": "none",
