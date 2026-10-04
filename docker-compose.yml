@@ -72,11 +72,12 @@ services:
     environment:
       MQTT_HOST: mosquitto
       MQTT_PORT: 1883
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: timescaledb
-      POSTGRES_PORT: 5432
+      # standard libpq variables, read directly by sqlx
+      PGHOST: timescaledb
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
     depends_on:
       mosquitto:
         condition: service_healthy

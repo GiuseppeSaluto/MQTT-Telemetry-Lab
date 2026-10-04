@@ -6,6 +6,7 @@ use std::time::Duration;
 use chrono::{DateTime, Utc};
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 use serde::Deserialize;
+use sqlx::postgres::PgConnectOptions;
 use sqlx::PgPool;
 use tokio::signal::unix::{signal, SignalKind};
 use tracing::{error, info, warn};
@@ -20,23 +21,6 @@ struct Telemetry {
     rpm: f64,
     power_consumption: f64,
     state: String,
-}
-
-// Takes a lookup function instead of reading `env::var` directly so it can be
-// unit tested without touching real (process-global) environment variables.
-fn database_url_from(get: impl Fn(&str) -> Option<String>) -> String {
-    let user = get("POSTGRES_USER").unwrap_or_else(|| "iot".to_string());
-    let password = get("POSTGRES_PASSWORD").unwrap_or_else(|| "iot".to_string());
-    let db = get("POSTGRES_DB").unwrap_or_else(|| "telemetry".to_string());
-    let host = get("POSTGRES_HOST").unwrap_or_else(|| "timescaledb".to_string());
-    let port = get("POSTGRES_PORT").unwrap_or_else(|| "5432".to_string());
-
-    let url = format!("postgres://{user}:{password}@{host}:{port}/{db}");
-    url
-}
-
-fn database_url() -> String {
-    database_url_from(|key| std::env::var(key).ok())
 }
 
 async fn insert_telemetry(pool: &PgPool, t: &Telemetry) -> Result<(), sqlx::Error> {
@@ -61,7 +45,9 @@ async fn insert_telemetry(pool: &PgPool, t: &Telemetry) -> Result<(), sqlx::Erro
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let pool = PgPool::connect(&database_url())
+    // Reads the standard libpq env vars (PGHOST, PGPORT, PGUSER, PGPASSWORD,
+    // PGDATABASE): no connection URL to build, so no escaping of the password.
+    let pool = PgPool::connect_with(PgConnectOptions::new())
         .await
         .expect("failed to connect to TimescaleDB");
     info!("connected to TimescaleDB");
@@ -131,27 +117,6 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn database_url_uses_provided_values() {
-        let url = database_url_from(|key| match key {
-            "POSTGRES_USER" => Some("alice".to_string()),
-            "POSTGRES_PASSWORD" => Some("secret".to_string()),
-            "POSTGRES_DB" => Some("mydb".to_string()),
-            "POSTGRES_HOST" => Some("dbhost".to_string()),
-            "POSTGRES_PORT" => Some("5555".to_string()),
-            _ => None,
-        });
-
-        assert_eq!(url, "postgres://alice:secret@dbhost:5555/mydb");
-    }
-
-    #[test]
-    fn database_url_falls_back_to_defaults() {
-        let url = database_url_from(|_| None);
-
-        assert_eq!(url, "postgres://iot:iot@timescaledb:5432/telemetry");
-    }
 
     #[test]
     fn telemetry_deserializes_valid_payload() {
