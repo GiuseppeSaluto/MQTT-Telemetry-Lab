@@ -79,7 +79,7 @@
         },
         "editorMode": "code",
         "rawQuery": true,
-        "rawSql": "SELECT time AS time, machine_id || ' anomaly (z=' || round(greatest(abs(temperature_zscore), abs(vibration_zscore))::numeric, 1) || ')' AS text, machine_id AS tags FROM telemetry_anomaly_scores WHERE is_anomaly AND $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time",
+        "rawSql": "SELECT time AS time, machine_id || ' anomaly (z=' || round(greatest(abs(temperature_zscore), abs(vibration_zscore))::numeric, 1) || ')' AS text, machine_id AS tags FROM anomaly_scores($__timeFrom(), $__timeTo()) WHERE is_anomaly AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time",
         "format": "table"
       }
     ]
@@ -414,7 +414,7 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "time_series",
-          "rawSql": "SELECT time AS \"time\", machine_id, temperature_zscore FROM telemetry_anomaly_scores WHERE $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
+          "rawSql": "SELECT time AS \"time\", machine_id, temperature_zscore FROM anomaly_scores($__timeFrom(), $__timeTo()) WHERE line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
         }
       ]
     },
@@ -444,7 +444,7 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "time_series",
-          "rawSql": "SELECT time AS \"time\", machine_id, vibration_zscore FROM telemetry_anomaly_scores WHERE $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
+          "rawSql": "SELECT time AS \"time\", machine_id, vibration_zscore FROM anomaly_scores($__timeFrom(), $__timeTo()) WHERE line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
         }
       ]
     }

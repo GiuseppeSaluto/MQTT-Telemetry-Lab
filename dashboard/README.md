@@ -18,5 +18,5 @@ single source of truth — edit the JSON/YAML, not the running Grafana.
   (`machine_kpis()`, see `storage/`), z-score anomaly panels, and annotations for both simulated faults and detected
   anomalies. Filterable by `line`/`machine_id` template variables.
 - `grafana/provisioning/alerting/rules.yml`: alert rule, fires when
-  `telemetry_anomaly_scores.is_anomaly` (see `storage/`) is true in the last
+  `anomaly_scores().is_anomaly` (see `storage/`) is true in the last
   2 minutes.

@@ -17,7 +17,7 @@ groups:
             relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: timescaledb
             model:
-              rawSql: "SELECT count(*)::float AS anomaly_count FROM telemetry_anomaly_scores WHERE is_anomaly AND time > now() - interval '2 minutes'"
+              rawSql: "SELECT count(*)::float AS anomaly_count FROM anomaly_scores(now() - interval '2 minutes', now()) WHERE is_anomaly"
               format: table
               editorMode: code
               rawQuery: true
