@@ -4,13 +4,28 @@ Rust service: subscribes to `factory/+/+/telemetry` on MQTT (`rumqttc`),
 deserializes each JSON payload, and writes it into TimescaleDB (`sqlx`,
 runtime-checked queries — no compile-time DB connection required to build).
 
-## Error handling
-The service never crashes on a single bad message:
-- malformed JSON → logged (`warn!`) and dropped
-- DB insert failure (e.g. `state` outside `running`/`idle`/`fault`, rejected
-  by the schema's `CHECK` constraint) → logged (`error!`) and skipped
+## Delivery and error handling
+At-least-once: the simulator publishes with QoS 1, the service keeps a
+persistent MQTT session (`clean_session = false`) and acks each message only
+after it's handled, so the broker queues messages while the service or the
+database is down and redelivers anything not acked.
+- malformed JSON → logged (`warn!`), acked and dropped
+- data the schema rejects (SQLSTATE class 22/23, e.g. a `state` outside
+  `running`/`idle`/`fault`) → logged (`error!`), acked and dropped: retrying
+  can't fix it, and not acking it would crash-loop on the same message
+- any other insert failure (database down) → logged and the process exits
+  without acking; Docker restarts it, it retries the DB connection every 2 s,
+  and the broker redelivers the message on reconnect
+- duplicates from redelivery → ignored by `ON CONFLICT DO NOTHING` on the
+  unique `(machine_id, time)` index
 - MQTT connection drop → logged (`warn!`), `rumqttc` reconnects and the
   service resubscribes on every `ConnAck`
+
+Measured locally (3 machines, one sample each every 2 s): with the database
+stopped for 60 s, 0 samples lost (46/46 per machine) against 93 lost before
+this design; with the service stopped for 30 s, 0 lost and 0 duplicates.
+Limit: queued messages live in the broker's memory (`max_queued_messages`,
+~18 h at this rate), so a broker restart during an outage loses them.
 
 ## Config (env vars)
 | Var | Default | Meaning |

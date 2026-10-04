@@ -7,10 +7,10 @@ the volume already exists, drop the `timescaledb_data` volume to re-apply it.
 
 - `init/001_schema.sql`: `telemetry` hypertable (1-day chunks), a `CHECK`
   constraint on `state` (`running`/`idle`/`fault`), indexes on
-  `(machine_id, time DESC)` and `(line, time DESC)` for the dashboard's query
-  patterns, and a 30-day retention policy.
+  `(machine_id, time DESC)` (unique, so messages redelivered by the broker are
+  not stored twice) and `(line, time DESC)` for the dashboard's query patterns, and a 30-day retention policy.
 - `init/002_anomaly_detection.sql`: `anomaly_scores(from, to)` function,
-  rolling 5-minute z-score per machine, flags `is_anomaly` independently of
+  rolling 5-minute z-score per machine, flags `is_anomaly` (|z| > 5) independently of
   the simulator's fault label. Reads only the requested range plus 5 minutes
   of warm-up, and skips idle samples (a stopped machine is not an anomaly).
 - `init/003_kpis.sql`: `machine_kpis(from, to)` function, per machine

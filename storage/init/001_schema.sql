@@ -17,8 +17,10 @@ CREATE TABLE telemetry (
 -- Partition by time; 1 day chunks are plenty for this data volume/rate.
 SELECT create_hypertable('telemetry', 'time', chunk_time_interval => INTERVAL '1 day');
 
--- Dashboard queries filter by machine (or line) and time range.
-CREATE INDEX idx_telemetry_machine_time ON telemetry (machine_id, time DESC);
+-- Dashboard queries filter by machine (or line) and time range. Unique, so a
+-- message redelivered by the broker (at-least-once) is dropped by the
+-- ingestion's ON CONFLICT DO NOTHING instead of stored twice.
+CREATE UNIQUE INDEX idx_telemetry_machine_time ON telemetry (machine_id, time DESC);
 CREATE INDEX idx_telemetry_line_time ON telemetry (line, time DESC);
 
 -- Drop data older than 30 days.

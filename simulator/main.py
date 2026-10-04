@@ -36,7 +36,7 @@ TYPE_PROFILES = {
     "assembly": {"rpm": 150.0, "power_consumption": 5.0},
 }
 
-ANOMALY_CHANCE = 0.03  # probability per tick, while running, of starting a fault spike
+ANOMALY_CHANCE = 0.002  # probability per tick, while running, of starting a fault spike (~3/h per machine at 2 s ticks)
 IDLE_CHANCE = 0.05  # probability per tick, while running, of switching to idle
 RESUME_CHANCE = 0.2  # probability per tick, while idle, of switching back to running
 SPIKE_DURATION_TICKS = 3
@@ -181,7 +181,7 @@ def main() -> None:
             for machine in machines:
                 payload = step(machine, rng)
                 topic = f"factory/{machine.line}/{machine.id}/telemetry"
-                client.publish(topic, json.dumps(payload))
+                client.publish(topic, json.dumps(payload), qos=1)
                 logger.debug("published %s: %s", topic, payload)
             time.sleep(TICK_SECONDS)
     except KeyboardInterrupt:

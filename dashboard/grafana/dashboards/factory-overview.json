@@ -418,7 +418,7 @@
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "red", "value": 3 }
+              { "color": "red", "value": 5 }
             ]
           }
         },
@@ -448,7 +448,7 @@
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "red", "value": 3 }
+              { "color": "red", "value": 5 }
             ]
           }
         },

@@ -22,7 +22,7 @@ flowchart LR
 | Component | What it does |
 |---|---|
 | `simulator/` | 3 machines on 2 lines, read from `config/machines.yaml`. Each is a running / idle / fault state machine with drifting, noisy readings (temperature, vibration, rpm, power) and occasional fault spikes. |
-| `ingestion/` | Subscribes to `factory/+/+/telemetry` and writes to TimescaleDB. A bad message is logged and skipped, never crashes the service; resubscribes after every reconnect; clean shutdown on SIGTERM. |
+| `ingestion/` | Subscribes to `factory/+/+/telemetry` and writes to TimescaleDB. At-least-once delivery: persistent MQTT session, ack only after the insert, duplicates ignored. Invalid data is logged and dropped; clean shutdown on SIGTERM. |
 | `storage/` | Hypertable (1-day chunks, 30-day retention) and two SQL functions: `machine_kpis()` (availability, minutes per state, kWh) and `anomaly_scores()` (rolling z-score). |
 | `dashboard/` | Grafana provisioned as code: datasource, "Factory Overview" dashboard, alert rule on detected anomalies. |
 
@@ -35,11 +35,15 @@ flowchart LR
 - **Rust for ingestion**: a single small binary with no runtime, the piece
   that would sit on an edge gateway next to the machines. At this data rate
   Python would cope too, and a config-only tool such as Telegraf could replace
-  it; the point here is a robust, low-footprint consumer.
+  it; the point here is a small consumer (~3 MiB of RAM) that doesn't lose
+  data: with the database stopped for 60 s, no sample is lost (see
+  `ingestion/README.md`).
 - **Anomaly detection independent of the fault label**: the z-score never
   looks at the simulator's `fault` state, it only sees the numbers. Idle
   samples are left out, since a stopped machine is a known operating mode,
-  not an anomaly.
+  not an anomaly. The threshold is |z| > 5, not the textbook 3: on 10 hours
+  of simulated data it caught all 83 faults with 0.1 false alarms per hour,
+  against 42 per hour at 3, because the readings drift slowly.
 - **Availability, not full OEE**: performance and quality need part counts
   (good / rejected), which the simulator doesn't produce.
 - **No hardcoded config**: machines, lines and thresholds come from
