@@ -97,6 +97,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "custom": { "spanNulls": true },
           "unit": "celsius"
         },
         "overrides": []
@@ -127,6 +128,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "custom": { "spanNulls": true },
           "unit": "none"
         },
         "overrides": []
@@ -157,6 +159,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "custom": { "spanNulls": true },
           "unit": "rotrpm"
         },
         "overrides": []
@@ -187,6 +190,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "custom": { "spanNulls": true },
           "unit": "kwatt"
         },
         "overrides": []
@@ -215,13 +219,20 @@
         "w": 24,
         "h": 6
       },
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": { "fields": ["machine_id"], "keepFields": false, "naming": { "asLabels": true } }
+        }
+      ],
       "options": {
         "mergeValues": true,
-        "showValue": "auto",
+        "showValue": "never",
         "rowHeight": 0.9
       },
       "fieldConfig": {
         "defaults": {
+          "displayName": "${__field.labels.machine_id}",
           "mappings": [
             {
               "type": "value",
@@ -253,7 +264,7 @@
           },
           "editorMode": "code",
           "rawQuery": true,
-          "format": "time_series",
+          "format": "table",
           "rawSql": "SELECT time AS \"time\", machine_id, state FROM telemetry WHERE $__timeFilter(time) AND line IN ($line) AND machine_id IN ($machine_id) ORDER BY time"
         }
       ]
@@ -396,7 +407,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
-          "custom": { "thresholdsStyle": { "mode": "line" } },
+          "custom": { "spanNulls": true, "thresholdsStyle": { "mode": "line" } },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -426,7 +437,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
-          "custom": { "thresholdsStyle": { "mode": "line" } },
+          "custom": { "spanNulls": true, "thresholdsStyle": { "mode": "line" } },
           "thresholds": {
             "mode": "absolute",
             "steps": [

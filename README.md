@@ -7,6 +7,8 @@ service ingests it into TimescaleDB, and Grafana shows live trends,
 availability / downtime / energy per machine, and statistical anomaly
 detection with alerting. Every piece runs as its own Docker service.
 
+![Grafana "Factory Overview" dashboard: one hour of telemetry for three machines](docs/images/dashboard.png)
+
 ## Architecture
 ```mermaid
 flowchart LR
