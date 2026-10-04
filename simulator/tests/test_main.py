@@ -1,14 +1,15 @@
 """Unit tests for the simulator's pure logic: state transitions, value
 generation, and config loading. No MQTT/network involved."""
 
-import numpy as np
+import random
+
 import pytest
 
 import main as sim
 
 
 class FakeRng:
-    """Deterministic stand-in for np.random.Generator: feed exact return
+    """Deterministic stand-in for random.Random: feed exact return
     values instead of relying on a real seed to hit a specific branch."""
 
     def __init__(self, randoms=None, normal=0.0, uniform=1.0):
@@ -19,7 +20,7 @@ class FakeRng:
     def random(self):
         return self._randoms.pop(0)
 
-    def normal(self, loc=0.0, scale=1.0):
+    def gauss(self, mu=0.0, sigma=1.0):
         return self._normal
 
     def uniform(self, low, high):
@@ -141,7 +142,7 @@ def test_idle_values_are_near_zero_activity():
 def test_running_values_stay_within_plausible_bounds():
     # property-style smoke test with a real seeded RNG across many ticks
     machine = make_machine(state="running")
-    rng = np.random.default_rng(42)
+    rng = random.Random(42)
 
     for _ in range(500):
         temperature, vibration, rpm, power = sim._generate_values(machine, rng)
@@ -156,7 +157,7 @@ def test_running_values_stay_within_plausible_bounds():
 
 def test_step_produces_expected_payload_shape():
     machine = make_machine()
-    rng = np.random.default_rng(0)
+    rng = random.Random(0)
 
     payload = sim.step(machine, rng)
 

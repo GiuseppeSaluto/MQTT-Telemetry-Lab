@@ -9,13 +9,13 @@ from __future__ import annotations
 import json
 import logging
 import os
+import random
 import signal
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-import numpy as np
 import paho.mqtt.client as mqtt
 import yaml
 
@@ -87,7 +87,7 @@ def load_machines(config_path: Path) -> list[MachineState]:
     return machines
 
 
-def _next_state(machine: MachineState, rng: np.random.Generator) -> str:
+def _next_state(machine: MachineState, rng: random.Random) -> str:
     if machine.spike_ticks_left > 0:
         machine.spike_ticks_left -= 1
         return "fault"
@@ -105,11 +105,11 @@ def _next_state(machine: MachineState, rng: np.random.Generator) -> str:
     return "running"
 
 
-def _generate_values(machine: MachineState, rng: np.random.Generator) -> tuple[float, float, float, float]:
+def _generate_values(machine: MachineState, rng: random.Random) -> tuple[float, float, float, float]:
     # slow mean-reverting drift + fast gaussian noise, updated every tick
     # regardless of state so it keeps evolving smoothly across transitions.
-    machine.temperature_drift += rng.normal(0, 0.3) - 0.05 * machine.temperature_drift
-    machine.vibration_drift += rng.normal(0, 0.05) - 0.05 * machine.vibration_drift
+    machine.temperature_drift += rng.gauss(0, 0.3) - 0.05 * machine.temperature_drift
+    machine.vibration_drift += rng.gauss(0, 0.05) - 0.05 * machine.vibration_drift
 
     if machine.state == "fault":
         temperature = machine.temperature_max * rng.uniform(1.02, 1.15)
@@ -122,15 +122,15 @@ def _generate_values(machine: MachineState, rng: np.random.Generator) -> tuple[f
         rpm = 0.0
         power_consumption = machine.power_baseline * 0.05
     else:
-        temperature = max(20.0, machine.temperature_baseline + machine.temperature_drift + rng.normal(0, 0.5))
-        vibration = max(0.0, machine.vibration_baseline + machine.vibration_drift + rng.normal(0, 0.1))
-        rpm = max(0.0, machine.rpm_baseline + rng.normal(0, machine.rpm_baseline * 0.02))
-        power_consumption = max(0.0, machine.power_baseline + rng.normal(0, machine.power_baseline * 0.03))
+        temperature = max(20.0, machine.temperature_baseline + machine.temperature_drift + rng.gauss(0, 0.5))
+        vibration = max(0.0, machine.vibration_baseline + machine.vibration_drift + rng.gauss(0, 0.1))
+        rpm = max(0.0, machine.rpm_baseline + rng.gauss(0, machine.rpm_baseline * 0.02))
+        power_consumption = max(0.0, machine.power_baseline + rng.gauss(0, machine.power_baseline * 0.03))
 
     return temperature, vibration, rpm, power_consumption
 
 
-def step(machine: MachineState, rng: np.random.Generator) -> dict:
+def step(machine: MachineState, rng: random.Random) -> dict:
     machine.state = _next_state(machine, rng)
     temperature, vibration, rpm, power_consumption = _generate_values(machine, rng)
 
@@ -174,7 +174,7 @@ def main() -> None:
     connect_with_retry(client, MQTT_HOST, MQTT_PORT)
     client.loop_start()
 
-    rng = np.random.default_rng()
+    rng = random.Random()
 
     try:
         while True:
