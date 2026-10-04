@@ -7,7 +7,7 @@ service ingests it into TimescaleDB, and Grafana shows live trends,
 availability / downtime / energy per machine, and statistical anomaly
 detection with alerting. Every piece runs as its own Docker service.
 
-![Grafana "Factory Overview" dashboard: one hour of telemetry for three machines](docs/images/dashboard.png)
+![Grafana "Factory Overview" dashboard: telemetry, machine states, KPIs and detected anomalies for three machines](docs/images/dashboard.png)
 
 ## Architecture
 ```mermaid
@@ -67,6 +67,6 @@ To follow logs for a single service: `docker compose logs -f simulator` (or
 
 ## Tests
 CI runs clippy and the unit tests for the Rust service, ruff and pytest for
-the simulator, and validates the compose file. The SQL functions have
-self-checks in `storage/tests/`, run against the database (see
-`storage/README.md`).
+the simulator, validates the compose file, and runs the SQL self-checks in
+`storage/tests/` against a fresh TimescaleDB with the init scripts applied
+(see `storage/README.md`).

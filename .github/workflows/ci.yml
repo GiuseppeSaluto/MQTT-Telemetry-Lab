@@ -43,3 +43,25 @@ jobs:
       - uses: actions/checkout@v4
       - run: cp .env.example .env
       - run: docker compose config -q
+
+  sql-checks:
+    runs-on: ubuntu-latest
+    services:
+      timescaledb:
+        image: timescale/timescaledb:2.28.3-pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: telemetry
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: telemetry
+    steps:
+      - uses: actions/checkout@v4
+      # same order as docker-entrypoint-initdb.d, then the self-checks
+      - run: for f in storage/init/*.sql storage/tests/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" || exit 1; done
