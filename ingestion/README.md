@@ -44,6 +44,11 @@ The `PG*` variables are the standard libpq ones, read directly by `sqlx`
 needs no escaping. docker-compose maps them from the `POSTGRES_*` values in
 `.env`.
 
+## Image
+Built on Alpine, so the binary is statically linked against musl, and TLS is
+rustls (no OpenSSL): the runtime image is `scratch` with only the binary,
+8 MB instead of 126 MB on Debian slim, running as uid 65534 rather than root.
+
 ## Build/run locally
 ```bash
 cargo build --release
