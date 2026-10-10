@@ -21,11 +21,13 @@ database is down and redelivers anything not acked.
 - MQTT connection drop → logged (`warn!`), `rumqttc` reconnects and the
   service resubscribes on every `ConnAck`
 
-Measured locally (3 machines, one sample each every 2 s): with the database
-stopped for 60 s, 0 samples lost (46/46 per machine) against 93 lost before
-this design; with the service stopped for 30 s, 0 lost and 0 duplicates.
-Limit: queued messages live in the broker's memory (`max_queued_messages`,
-~18 h at this rate), so a broker restart during an outage loses them.
+Measured locally: with the database stopped for 60 s, 0 samples lost, both
+with 3 machines (46/46 per machine, against 93 lost before this design) and
+with 36 machines (46/46 for each, ~1,000 messages queued by the broker); with
+the service stopped for 30 s, 0 lost and 0 duplicates.
+Limits: queued messages live in the broker's memory, so a broker restart
+during an outage loses them, and `max_queued_messages` (100,000) covers about
+1.5 h of outage at 36 machines (18 msg/s).
 
 ## Config (env vars)
 | Var | Default | Meaning |

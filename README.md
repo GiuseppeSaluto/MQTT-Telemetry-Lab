@@ -7,7 +7,7 @@ service ingests it into TimescaleDB, and Grafana shows live trends,
 availability / downtime / energy per machine, and statistical anomaly
 detection with alerting. Every piece runs as its own Docker service.
 
-![Grafana "Factory Overview" dashboard: telemetry, machine states, KPIs and detected anomalies for three machines](docs/images/dashboard.png)
+![Grafana "Factory Overview" dashboard: telemetry, machine states, KPIs and detected anomalies for a 36-machine plant, then one machine in detail](docs/images/dashboard.png)
 
 ## Architecture
 ```mermaid
@@ -21,7 +21,7 @@ flowchart LR
 
 | Component | What it does |
 |---|---|
-| `simulator/` | 3 machines on 2 lines, read from `config/machines.yaml`. Each is a running / idle / fault state machine with drifting, noisy readings (temperature, vibration, rpm, power) and occasional fault spikes. |
+| `simulator/` | 36 machines on 4 lines, read from `config/machines.yaml`. Each is a running / idle / fault state machine with drifting, noisy readings (temperature, vibration, rpm, power) and occasional fault spikes. |
 | `ingestion/` | Subscribes to `factory/+/+/telemetry` and writes to TimescaleDB. At-least-once delivery: persistent MQTT session, ack only after the insert, duplicates ignored. Invalid data is logged and dropped; clean shutdown on SIGTERM. |
 | `storage/` | Hypertable (1-day chunks, 30-day retention) and two SQL functions: `machine_kpis()` (availability, minutes per state, kWh) and `anomaly_scores()` (rolling z-score). |
 | `dashboard/` | Grafana provisioned as code: datasource, "Factory Overview" dashboard, alert rule on detected anomalies. |

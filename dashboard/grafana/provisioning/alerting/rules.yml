@@ -17,7 +17,8 @@ groups:
             relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: timescaledb
             model:
-              rawSql: "SELECT count(*)::float AS anomaly_count FROM anomaly_scores(now() - interval '2 minutes', now()) WHERE is_anomaly"
+              # one row per machine -> one alert instance per machine (machine_id label)
+              rawSql: "SELECT machine_id, count(*)::float AS anomaly_count FROM anomaly_scores(now() - interval '2 minutes', now()) WHERE is_anomaly GROUP BY machine_id"
               format: table
               editorMode: code
               rawQuery: true
@@ -34,4 +35,4 @@ groups:
               refId: B
         labels: {}
         annotations:
-          summary: "Anomaly detected in machine telemetry"
+          summary: "Anomaly detected on {{ $labels.machine_id }}"

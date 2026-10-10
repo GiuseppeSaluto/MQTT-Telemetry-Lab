@@ -47,15 +47,16 @@ def make_machine(**overrides):
 def test_load_machines_reads_real_config():
     machines = sim.load_machines(sim.CONFIG_PATH)
 
-    assert [m.id for m in machines] == ["machine_A", "machine_B", "machine_C"]
-    assert [m.line for m in machines] == ["line1", "line1", "line2"]
+    assert len(machines) == 36
+    assert len({m.id for m in machines}) == 36  # ids are unique
+    assert sorted({m.line for m in machines}) == ["line1", "line2", "line3", "line4"]
 
-    machine_a = machines[0]
-    assert machine_a.type == "extruder"
-    assert machine_a.temperature_max == 85
-    assert machine_a.vibration_max == 4.5
+    first = machines[0]
+    assert (first.id, first.line, first.type) == ("l1_ext_01", "line1", "extruder")
+    assert first.temperature_max == 85
+    assert first.vibration_max == 4.5
     # rpm/power come from TYPE_PROFILES, keyed by machine type
-    assert machine_a.rpm_baseline == sim.TYPE_PROFILES["extruder"]["rpm"]
+    assert first.rpm_baseline == sim.TYPE_PROFILES["extruder"]["rpm"]
 
 
 # -- _next_state ------------------------------------------------------------
