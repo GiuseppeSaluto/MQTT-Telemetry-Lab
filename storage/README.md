@@ -17,6 +17,11 @@ the volume already exists, drop the `timescaledb_data` volume to re-apply it.
   availability (running time / observed time), minutes running/idle/fault and
   energy in kWh over a time range. Used by the dashboard's KPI table.
 
+- `init/004_compression.sql`: native compression for chunks older than a
+  day, one segment per machine. On 2 days of simulated data (36 machines,
+  3.1M rows): 589 MB -> 84 MB (7x), same query results, per-machine reads ~4x
+  faster; redelivered rows are still deduplicated in compressed chunks.
+
 Init scripts are idempotent from `002` on (`CREATE OR REPLACE`), so a new or
 changed one can be applied to an existing volume without dropping it:
 ```bash
@@ -24,7 +29,7 @@ docker compose exec -T timescaledb sh -c 'psql -v ON_ERROR_STOP=1 -U $POSTGRES_U
 ```
 
 ## Check
-`tests/check_kpis.sql` and `tests/check_anomaly_scores.sql` insert known
-samples in a transaction, assert the exact function output and roll back (no
+`tests/check_kpis.sql`, `tests/check_anomaly_scores.sql` and
+`tests/check_compression.sql` insert known samples in a transaction, assert the exact function output and roll back (no
 data left behind). Run them with the same command as above; each prints
 `... check passed` or fails naming what is wrong.

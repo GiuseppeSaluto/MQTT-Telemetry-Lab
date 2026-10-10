@@ -23,7 +23,7 @@ flowchart LR
 |---|---|
 | `simulator/` | 36 machines on 4 lines, read from `config/machines.yaml`. Each is a running / idle / fault state machine with drifting, noisy readings (temperature, vibration, rpm, power) and occasional fault spikes. |
 | `ingestion/` | Subscribes to `factory/+/+/telemetry` and writes to TimescaleDB. At-least-once delivery: persistent MQTT session, ack only after the insert, duplicates ignored. Invalid data is logged and dropped; clean shutdown on SIGTERM. |
-| `storage/` | Hypertable (1-day chunks, 30-day retention) and two SQL functions: `machine_kpis()` (availability, minutes per state, kWh) and `anomaly_scores()` (rolling z-score). |
+| `storage/` | Hypertable (1-day chunks, compressed after a day, 30-day retention) and two SQL functions: `machine_kpis()` (availability, minutes per state, kWh) and `anomaly_scores()` (rolling z-score). |
 | `dashboard/` | Grafana provisioned as code: datasource, "Factory Overview" dashboard, alert rule on detected anomalies. |
 
 ## Design choices
@@ -31,7 +31,8 @@ flowchart LR
   time range, so plain SQL with window functions fits, and time partitioning
   skips the chunks outside the range. The anomaly alert query reads only the
   last minutes: 3.6 ms on 30 days of data (3.9M rows), against 61 s for the
-  first version, which scored the whole table.
+  first version, which scored the whole table. Chunks older than a day are
+  compressed: 7x smaller (589 MB -> 84 MB for 2 days of 36 machines).
 - **Rust for ingestion**: a single small binary with no runtime, the piece
   that would sit on an edge gateway next to the machines. At this data rate
   Python would cope too, and a config-only tool such as Telegraf could replace
