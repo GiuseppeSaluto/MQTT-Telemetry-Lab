@@ -36,7 +36,7 @@ flowchart LR
   that would sit on an edge gateway next to the machines. At this data rate
   Python would cope too, and a config-only tool such as Telegraf could replace
   it; the point here is a small consumer (an 8 MB image holding only a
-  static binary, ~1.5 MiB of RAM, not running as root) that doesn't lose
+  static binary, ~2 MiB of RAM with 36 machines, not running as root) that doesn't lose
   data: with the database stopped for 60 s, no sample is lost (see
   `ingestion/README.md`).
 - **Anomaly detection independent of the fault label**: the z-score never

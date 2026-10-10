@@ -1,6 +1,7 @@
 // Ingestion service: MQTT subscriber -> TimescaleDB writer.
 
 use std::env;
+use std::io::IsTerminal;
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
@@ -52,7 +53,10 @@ async fn insert_telemetry(pool: &PgPool, t: &Telemetry) -> Result<(), sqlx::Erro
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    // colours only on a terminal, not in `docker logs` or a file
+    tracing_subscriber::fmt()
+        .with_ansi(std::io::stdout().is_terminal())
+        .init();
 
     // Reads the standard libpq env vars (PGHOST, PGPORT, PGUSER, PGPASSWORD,
     // PGDATABASE): no connection URL to build, so no escaping of the password.

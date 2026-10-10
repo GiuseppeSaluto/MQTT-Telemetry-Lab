@@ -4,8 +4,6 @@ noise and occasional anomalies. Reads machine/line/threshold config from
 config/machines.yaml.
 """
 
-from __future__ import annotations
-
 import json
 import logging
 import os
@@ -13,7 +11,7 @@ import random
 import signal
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
@@ -135,7 +133,7 @@ def step(machine: MachineState, rng: random.Random) -> dict:
     temperature, vibration, rpm, power_consumption = _generate_values(machine, rng)
 
     return {
-        "time": datetime.now(timezone.utc).isoformat(),
+        "time": datetime.now(UTC).isoformat(),
         "line": machine.line,
         "machine_id": machine.id,
         "temperature": round(temperature, 2),
@@ -144,17 +142,6 @@ def step(machine: MachineState, rng: random.Random) -> dict:
         "power_consumption": round(power_consumption, 2),
         "state": machine.state,
     }
-
-
-def connect_with_retry(client: mqtt.Client, host: str, port: int, attempts: int = 10, delay: float = 3.0) -> None:
-    for attempt in range(1, attempts + 1):
-        try:
-            client.connect(host, port)
-            return
-        except OSError as exc:
-            logger.warning("MQTT connect attempt %d/%d to %s:%d failed: %s", attempt, attempts, host, port, exc)
-            time.sleep(delay)
-    raise RuntimeError(f"could not connect to MQTT broker at {host}:{port}")
 
 
 def _raise_keyboard_interrupt(_signum, _frame) -> None:
@@ -171,7 +158,10 @@ def main() -> None:
     logger.info("loaded %d machines from %s", len(machines), CONFIG_PATH)
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-    connect_with_retry(client, MQTT_HOST, MQTT_PORT)
+    # paho's network thread retries the first connection too, and reconnects
+    # after a drop; QoS 1 messages published meanwhile are queued in memory.
+    client.on_connect = lambda *_: logger.info("connected to MQTT broker at %s:%d", MQTT_HOST, MQTT_PORT)
+    client.connect_async(MQTT_HOST, MQTT_PORT)
     client.loop_start()
 
     rng = random.Random()
