@@ -1,3 +1,7 @@
 [tool.pytest.ini_options]
 # lets `tests/test_main.py` do `import main` regardless of cwd
 pythonpath = ["."]
+
+[tool.ruff]
+# `main` is this project's module wherever ruff runs from (repo root or here)
+src = ["."]

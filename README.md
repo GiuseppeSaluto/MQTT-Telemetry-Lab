@@ -72,6 +72,10 @@ cp .env.example .env   # then edit .env with your own values
 docker compose up -d
 ```
 
+The first start takes a few minutes: it downloads the images and compiles the
+Rust service (~3 min on a laptop); later starts take seconds. Data appears in
+Grafana within a minute.
+
 | Service     | URL / Port              | Notes                                  |
 |-------------|--------------------------|-----------------------------------------|
 | Grafana     | http://localhost:3000    | Login with `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD` from `.env`; dashboard "Factory Overview" |

@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest>=8.0
-ruff>=0.6
+# pinned: new ruff releases add default rules, which would turn CI red with no code change
+ruff==0.17.0

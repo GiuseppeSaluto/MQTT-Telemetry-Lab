@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
-      - run: ruff check .
+      - run: ruff check ..  # whole repo, not just the simulator
       - run: pytest -v
 
   compose-validate:
