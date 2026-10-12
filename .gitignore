@@ -14,3 +14,6 @@ target/
 Thumbs.db
 *.pem
 *.key
+
+# SKAB benchmark data (GPL-3.0), downloaded on demand by storage/eval_skab.py
+storage/.skab/

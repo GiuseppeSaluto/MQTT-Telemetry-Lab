@@ -46,9 +46,16 @@ flowchart LR
   not an anomaly. The threshold is |z| > 5, not the textbook 3: on 10 hours
   of simulated data it caught all 83 simulated faults with 0.1 false alarms
   per hour, against 42 per hour at 3, because the readings drift slowly.
-  These faults come from the same simulator, as sharp jumps above the
-  thresholds, so this shows the detector works on them, not how it would do
-  on real sensors; that needs real labelled data.
+  Those faults come from the same simulator, so the detector is also measured
+  on real, labelled sensor data: the [SKAB](https://github.com/waico/SKAB)
+  pump testbed, 34 experiments with one anomaly each
+  (`python3 storage/eval_skab.py`). It flags 10 of 34 within 60 s of the
+  labelled start (median delay 1 s) with 3 false alarms per hour; at
+  |z| > 3 it would flag 17 but with 109 false alarms per hour. Most SKAB
+  anomalies are hydraulic (valves, pressure, flow) and barely move temperature
+  or vibration, the only two signals this detector watches, and a rolling
+  z-score sees the onset of a long anomaly, not its whole duration (recall
+  per sample is 0.01). Watching more signals is the obvious next step.
 - **Availability, not full OEE**: performance and quality need part counts
   (good / rejected), which the simulator doesn't produce.
 - **No hardcoded config**: machines, lines and thresholds come from

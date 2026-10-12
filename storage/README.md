@@ -22,6 +22,13 @@ the volume already exists, drop the `timescaledb_data` volume to re-apply it.
   3.1M rows): 589 MB -> 84 MB (7x), same query results, per-machine reads ~4x
   faster; redelivered rows are still deduplicated in compressed chunks.
 
+- `eval_skab.py`: measures `anomaly_scores()` on real, labelled data (SKAB
+  pump testbed, GPL-3.0, downloaded on demand into the gitignored
+  `storage/.skab/`, not redistributed). Builds a throwaway TimescaleDB from
+  `init/`, loads each experiment as a machine, prints detections within 60 s
+  of the labelled onset, false alarms per hour and per-sample
+  precision/recall. Needs Docker, ~20 s.
+
 Init scripts are idempotent from `002` on (`CREATE OR REPLACE`), so a new or
 changed one can be applied to an existing volume without dropping it:
 ```bash
