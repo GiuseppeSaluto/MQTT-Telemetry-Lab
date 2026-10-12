@@ -24,10 +24,12 @@ database is down and redelivers anything not acked.
 Measured locally: with the database stopped for 60 s, 0 samples lost, both
 with 3 machines (46/46 per machine, against 93 lost before this design) and
 with 36 machines (46/46 for each, ~1,000 messages queued by the broker); with
-the service stopped for 30 s, 0 lost and 0 duplicates.
-Limits: queued messages live in the broker's memory, so a broker restart
-during an outage loses them, and `max_queued_messages` (100,000) covers about
-1.5 h of outage at 36 machines (18 msg/s).
+the service stopped for 30 s, 0 lost and 0 duplicates. The broker persists
+sessions and queued messages to a volume, so restarting it while the service
+is down loses nothing (0 of 720, against 720 of 756 before persistence).
+Limits: a hard broker crash (SIGKILL, power loss) loses what changed since
+its last save, at most 60 s (`autosave_interval`); `max_queued_messages`
+(100,000) covers about 1.5 h of outage at 36 machines (18 msg/s).
 
 ## Config (env vars)
 | Var | Default | Meaning |

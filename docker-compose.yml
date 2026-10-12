@@ -5,6 +5,7 @@ services:
       - "127.0.0.1:1883:1883"
     volumes:
       - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
       interval: 5s
@@ -85,5 +86,6 @@ services:
         condition: service_healthy
 
 volumes:
+  mosquitto_data:
   timescaledb_data:
   grafana_data:
