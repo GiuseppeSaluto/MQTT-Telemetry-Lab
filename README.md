@@ -44,8 +44,11 @@ flowchart LR
   looks at the simulator's `fault` state, it only sees the numbers. Idle
   samples are left out, since a stopped machine is a known operating mode,
   not an anomaly. The threshold is |z| > 5, not the textbook 3: on 10 hours
-  of simulated data it caught all 83 faults with 0.1 false alarms per hour,
-  against 42 per hour at 3, because the readings drift slowly.
+  of simulated data it caught all 83 simulated faults with 0.1 false alarms
+  per hour, against 42 per hour at 3, because the readings drift slowly.
+  These faults come from the same simulator, as sharp jumps above the
+  thresholds, so this shows the detector works on them, not how it would do
+  on real sensors; that needs real labelled data.
 - **Availability, not full OEE**: performance and quality need part counts
   (good / rejected), which the simulator doesn't produce.
 - **No hardcoded config**: machines, lines and thresholds come from
