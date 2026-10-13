@@ -86,8 +86,20 @@ Grafana within a minute.
 To follow logs for a single service: `docker compose logs -f simulator` (or
 `ingestion`, `grafana`, ...).
 
+## Development
+- **Database schema**: the scripts in `storage/init/` run only on an empty
+  data volume. From `002` on they are idempotent, so a changed one can be
+  applied to a running database:
+  ```bash
+  docker compose exec -T timescaledb sh -c 'psql -v ON_ERROR_STOP=1 -U $POSTGRES_USER -d $POSTGRES_DB' < storage/init/003_kpis.sql
+  ```
+  The self-checks in `storage/tests/` run the same way: each inserts known
+  samples in a transaction, asserts the exact output, rolls back and prints
+  `... check passed`.
+- **Grafana** is provisioned read-only: edit the files in `dashboard/grafana/`,
+  not the running Grafana.
+
 ## Tests
 CI runs clippy and the unit tests for the Rust service, ruff and pytest for
-the simulator, validates the compose file, and runs the SQL self-checks in
-`storage/tests/` against a fresh TimescaleDB with the init scripts applied
-(see `storage/README.md`).
+the simulator, validates the compose file, and runs the SQL self-checks
+against a fresh TimescaleDB with the init scripts applied.
