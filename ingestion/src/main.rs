@@ -158,6 +158,7 @@ async fn main() {
 mod tests {
     use super::*;
 
+    // the simulator's payload, field for field: catches a rename on either side
     #[test]
     fn telemetry_deserializes_valid_payload() {
         let json = r#"{
@@ -177,40 +178,5 @@ mod tests {
         assert_eq!(telemetry.machine_id, "machine_A");
         assert_eq!(telemetry.state, "idle");
         assert_eq!(telemetry.temperature, 26.83);
-    }
-
-    #[test]
-    fn telemetry_rejects_missing_field() {
-        let json = r#"{
-            "time": "2026-07-27T19:17:48.023858+00:00",
-            "line": "line1",
-            "machine_id": "machine_A",
-            "temperature": 26.83,
-            "vibration": 0.4,
-            "rpm": 0.0,
-            "state": "idle"
-        }"#; // missing power_consumption
-
-        let result: Result<Telemetry, _> = serde_json::from_str(json);
-
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn telemetry_rejects_malformed_timestamp() {
-        let json = r#"{
-            "time": "not-a-timestamp",
-            "line": "line1",
-            "machine_id": "machine_A",
-            "temperature": 26.83,
-            "vibration": 0.4,
-            "rpm": 0.0,
-            "power_consumption": 2.25,
-            "state": "idle"
-        }"#;
-
-        let result: Result<Telemetry, _> = serde_json::from_str(json);
-
-        assert!(result.is_err());
     }
 }

@@ -8,8 +8,6 @@
 -- is a known operating mode, not an anomaly, and its low readings would
 -- inflate the stddev and hide real spikes.
 
-DROP VIEW IF EXISTS telemetry_anomaly_scores;
-
 CREATE OR REPLACE FUNCTION anomaly_scores(from_ts TIMESTAMPTZ, to_ts TIMESTAMPTZ)
 RETURNS TABLE (
     "time"              TIMESTAMPTZ,
