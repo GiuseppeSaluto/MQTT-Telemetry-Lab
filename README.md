@@ -38,8 +38,9 @@ flowchart LR
   Python would cope too, and a config-only tool such as Telegraf could replace
   it; the point here is a small consumer (an 8 MB image holding only a
   static binary, ~2 MiB of RAM with 36 machines, not running as root) that doesn't lose
-  data: with the database stopped for 60 s, no sample is lost (see
-  `ingestion/README.md`).
+  data: with the database stopped for 60 s, no sample is lost. One insert per
+  message keeps it simple and sustains ~1,400 msg/s, 80x this plant's load
+  (see `ingestion/README.md`).
 - **Anomaly detection independent of the fault label**: the z-score never
   looks at the simulator's `fault` state, it only sees the numbers. Idle
   samples are left out, since a stopped machine is a known operating mode,

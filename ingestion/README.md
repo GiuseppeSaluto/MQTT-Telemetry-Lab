@@ -31,6 +31,15 @@ Limits: a hard broker crash (SIGKILL, power loss) loses what changed since
 its last save, at most 60 s (`autosave_interval`); `max_queued_messages`
 (100,000) covers about 1.5 h of outage at 36 machines (18 msg/s).
 
+## Throughput
+Measured by queueing 100,000 messages on the broker while the service was
+stopped, then timing the drain: ~1,400 msg/s, steady, with neither the
+service (18% of a core) nor the database (38%) saturated. That is 80x the
+simulated plant, about 2,900 machines at a 2 s tick. The limit is one commit
+per message: with Postgres' `synchronous_commit = off` (diagnosis only, it
+would ack rows not yet on disk) the same drain ran at ~3,600 msg/s. Batched
+inserts, one commit per batch, are the upgrade path; not needed at this load.
+
 ## Config (env vars)
 | Var | Default | Meaning |
 |---|---|---|
