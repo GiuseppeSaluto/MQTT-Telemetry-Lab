@@ -160,6 +160,10 @@ def main() -> None:
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     # paho's network thread retries the first connection too, and reconnects
     # after a drop; QoS 1 messages published meanwhile are queued in memory.
+    # ponytail: paho's buffer is unbounded by default (~135 MiB/h with the broker
+    # down, measured). Capped like the broker's queue (~1.5 h at 36 machines,
+    # ~200 MiB); past it new samples are dropped. Upgrade path: spool to disk.
+    client.max_queued_messages_set(100_000)
     client.on_connect = lambda *_: logger.info("connected to MQTT broker at %s:%d", MQTT_HOST, MQTT_PORT)
     client.connect_async(MQTT_HOST, MQTT_PORT)
     client.loop_start()
